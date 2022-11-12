@@ -1,31 +1,16 @@
-import os
 import gym
 import minerl
 import logging
 logging.basicConfig(level=logging.DEBUG)
-from time import sleep
-from minerl.herobraine.hero.handler import Handler
-import minerl.herobraine.hero.handlers as handlers
-from typing import List
-import time
 import math
 env = gym.make('MineRLBasaltFindCave-v0')
 
-# Note that this command will launch the MineRL environment, which takes time.
-# Be patient!
-obs = env.reset()
-
-done = False
-score = 0
-frame = 0
-print(env.action_space)
-
 # internal compass
-starting_location = [0,0] # x, z   | no y to keep it simple
-current_position = [0,0]
-history = []
-history.append(starting_location)
-heading = 0
+starting_location = [0,0] # x, z
+current_position = [0,0] # x, z
+history = [] # history for visited coordinates
+history.append(starting_location) # add starting position
+heading = 0 
 
 WALKING_SPEED = 4.317 # 4.317 blocks per second | 20 steps per second
 SPRINTING_SPEED = 5.612 # 5.612 blocks per second | 20 steps per second
@@ -50,8 +35,6 @@ def coordinates(heading, history, action, distance_from_last_point, current_posi
     else:
         z = (math.sin(math.radians(heading)) * WALKING_SPEED_PER_STEP)
         x = (math.cos(math.radians(heading)) * WALKING_SPEED_PER_STEP)
-
-    blocks_from_point = 10
     
     if(action['forward'] == 1):
         print("Forward")
@@ -67,6 +50,8 @@ def coordinates(heading, history, action, distance_from_last_point, current_posi
         current_position[0] += x
         current_position[1] += -z         
 
+    # if agent has traveled > 10 blocks then update history
+    blocks_from_point = 10
     distance_from_last_point = math.sqrt((current_position[0] - history[-1][0])**2 + (current_position[1] - history[-1][1])**2)
     if(distance_from_last_point > blocks_from_point):
         temp_pos =[0,0]
@@ -77,6 +62,7 @@ def coordinates(heading, history, action, distance_from_last_point, current_posi
         print("Updating....")
     return heading, history, distance_from_last_point, current_position
 
+# idk how to set this up to do rl
 def too_close(current_position, history):
     for i in history:
         if(((current_position[0] - history[i][0])**2 + (current_position[1] - history[i][1])**2) <= 5**2):
@@ -85,6 +71,7 @@ def too_close(current_position, history):
 
     return reward
 
+# just to remove unnecessary actions
 def remove_actions(action):
     action["ESC"] = 0
     action["inventory"] = 0 
@@ -102,34 +89,25 @@ def remove_actions(action):
     action["hotbar.8"] = 0
     action["hotbar.9"] = 0
 
-    # action["camera"] = [0,0]
-
-    # action["forward"] = 1
-
 action = env.action_space.sample()
 remove_actions(action)
 done = False
+obs = env.reset()
 
 while not done:
     # Take a random action
     action = env.action_space.sample()
-    # In BASALT environments, sending ESC action will end the episode
-    # Lets not do that
-    action["ESC"] = 0
-    # action["inventory"] = 0
-    remove_actions(action)
 
+    # if camera moved => update heading
     if(action['camera'][1] != 0):
         n_h = camera_mov(heading, action['camera'][1])
         heading = n_h
 
-    # # can you press forward and left at the same time??
+    # if player moves => update coordinates
     if((action['forward'] == 1) or (action['left']==1) or (action['right']==1) or (action['back']==1)):
         heading, history, distance_from_last_point, current_position = coordinates(heading, history, action, distance_from_last_point, current_position)
         print("history: ", history, "   | current_position: ", current_position)
 
-    if((action['forward'] == 1) and (action['left']==1) or ((action['forward']==1) and (action['right']==1))):
-        print("###############   Multiple buttons pressed ###############")
 
     obs, reward, done, _ = env.step(action)
     env.render()
