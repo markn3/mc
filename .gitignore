@@ -1,0 +1,5 @@
+MineRLBasaltFindCave-v0/
+test/
+data/
+cave_classifier.model/
+cave_classifier_1111.model/
