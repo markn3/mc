@@ -6,11 +6,12 @@ from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.regularizers import l2
 import pathlib
 import matplotlib.pyplot as plt
-# data_dir = 'C:\\Users\\markn\\Desktop\\mc\\CNN\\data'
+
+# directory for data
 data_dir = 'C:/Users/markn/Desktop/mc/CNN/data'
 data_dir = pathlib.Path(data_dir)
-print("data_dir: ", data_dir)
 
+# split data from directory into train and validation sets
 train_ds = tf.keras.preprocessing.image_dataset_from_directory(
     data_dir,
     validation_split=0.2,
@@ -34,12 +35,11 @@ class_names = train_ds.class_names
 print(class_names)
 
 AUTOTUNE = tf.data.experimental.AUTOTUNE
-
 train_ds = train_ds.cache().prefetch(buffer_size=AUTOTUNE)
 val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)
 
 
-# CNN
+# CNN model
 model = tf.keras.Sequential([
     layers.Conv2D(32, (7,7), padding='same', activation='relu', kernel_regularizer = l2(0.0005)),
     layers.MaxPooling2D(),
