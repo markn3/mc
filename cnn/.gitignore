@@ -3,3 +3,4 @@ test/
 data/
 cave_classifier.model/
 cave_classifier_1111.model/
+__pycache__/
