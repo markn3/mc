@@ -3,4 +3,6 @@ test/
 data/
 cave_classifier.model/
 cave_classifier_1111.model/
+models/
+cave_classifier_1121_balanced_LR.model/
 __pycache__/

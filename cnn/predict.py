@@ -1,14 +1,11 @@
-print("Importing packages")
-import tensorflow as tf
 import cv2
-import numpy as np
-
 class image_classifer:
 
     # constructor
     def __init__(self, model):
         # Instance variable
         self.model = model
+        self.count = 0
     
     # resize image
     def prepare(img):
@@ -24,7 +21,18 @@ class image_classifer:
     
     def classify(self, prepped_img):
         classification = "NotCave"
-        prediction = self.model.predict(prepped_img)
-        if(prediction[[0][0]] < 0.5):
+        prediction = self.model.predict(prepped_img, verbose=0)
+        if(prediction[[0][0]] < 0.30):
             classification = "Cave"
-        return classification, prediction
+        found  = self.cave_count(classification)
+        return classification, prediction, found
+    
+    def cave_count(self, classification):
+        if(classification == "Cave"):
+            self.count += 1
+        else:
+            self.count = 0
+        if(self.count == 10):
+            return True
+        else:
+            return False
